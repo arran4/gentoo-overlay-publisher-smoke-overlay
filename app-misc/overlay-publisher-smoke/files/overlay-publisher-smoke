@@ -1,0 +1,2 @@
+#!/bin/sh
+printf '%s\n' 'Gentoo Overlay Publisher smoke fixture 0.1.0'
