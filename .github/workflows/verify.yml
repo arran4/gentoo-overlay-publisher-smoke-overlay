@@ -1,0 +1,53 @@
+name: Verify smoke overlay
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: smoke-overlay-verify-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Repository structure and fixture syntax
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out smoke overlay
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Validate repository skeleton, metadata and ebuild syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          test "$(cat profiles/repo_name)" = gentoo-overlay-publisher-smoke-overlay
+          test "$(cat profiles/eapi)" = 8
+          grep -Eq '^[[:space:]]*masters[[:space:]]*=[[:space:]]*gentoo[[:space:]]*$' metadata/layout.conf
+          grep -Eq '^[[:space:]]*thin-manifests[[:space:]]*=[[:space:]]*true[[:space:]]*$' metadata/layout.conf
+
+          count=0
+          while IFS= read -r -d '' ebuild; do
+            bash -n "$ebuild"
+            test -f "$(dirname "$ebuild")/Manifest"
+            count=$((count+1))
+          done < <(find . -type f -name '*.ebuild' -print0)
+          test "$count" -ge 1
+
+          while IFS= read -r -d '' metadata; do
+            python3 -c 'import sys, xml.etree.ElementTree as ET; assert ET.parse(sys.argv[1]).getroot().tag == "pkgmetadata"' "$metadata"
+          done < <(find . -type f -name metadata.xml -print0)
+
+          bash -n app-misc/overlay-publisher-smoke/files/overlay-publisher-smoke
+          git diff --exit-code
+
+      # Real Gentoo pkgcheck, Portage fetch/build/install, and credentialed
+      # publisher PR smoke tests will be added after the publisher CLI/Action
+      # supplies a tested end-to-end publishing contract. Do not run secrets
+      # in the untrusted pull_request workflow above.
