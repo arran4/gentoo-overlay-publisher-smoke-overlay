@@ -1,0 +1,6 @@
+# Local build and verification outputs; published package files remain tracked.
+/.cache/
+/dist/
+/tmp/
+/packages/
+/metadata/md5-cache/
