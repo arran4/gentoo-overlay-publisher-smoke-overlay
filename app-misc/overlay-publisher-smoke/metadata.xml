@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+  <longdescription lang="en">
+    Nonproduction package used to test Gentoo Overlay Publisher's
+    ebuild generation, overlay reconciliation, revision retention,
+    metadata preservation, and Portage installation paths.
+  </longdescription>
+  <upstream>
+    <remote-id type="github">arran4/gentoo-overlay-publisher</remote-id>
+  </upstream>
+</pkgmetadata>
